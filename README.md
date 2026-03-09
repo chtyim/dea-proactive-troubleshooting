@@ -2,7 +2,7 @@
 
 This project contains an automated proactive troubleshooting pipeline for Google Cloud Dataform using the **Data Engineering Agent (DEA)**.
 
-When a Dataform job fails, a Cloud Logging Sink captures the failure event and triggers a Pub/Sub topic. A Gen 2 Cloud Function listens to this topic, extracts the failure context, and automatically invokes the Data Engineering Agent. 
+When a Dataform or BQ Pipeline job fails, a Cloud Logging Sink captures the failure event and triggers a Pub/Sub topic. A Gen 2 Cloud Function listens to this topic, extracts the failure context, and automatically invokes the Data Engineering Agent. 
 
 The agent analyzes the failure, provides a Root Cause Analysis (RCA), and automatically prepares a draft workspace (e.g., `user_email-agent-draft`) with proposed fixes. Finally, an email report containing the RCA and a direct link to the draft workspace is dispatched to the user.
 
