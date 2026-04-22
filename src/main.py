@@ -338,6 +338,22 @@ def send_email(project_id, recipient, subject, html_body, rca_text, workspace_ur
             
         if policy_to_update:
             docs = f"**{subject}**\n\nThe Data Engineering Agent generated the following Root Cause Analysis:\n\n{rca_text}\n\n---\n\n**[🚀 Click here to open the {pipeline_name}]({workspace_url})**"
+            
+            # Cloud Monitoring documentation.content has a hard limit of
+            # 8,192 Unicode characters / 10,240 UTF-8 bytes.
+            # Sanitize: remove null bytes and other control characters that
+            # could cause validation errors.
+            docs = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', '', docs)
+            
+            MAX_DOC_CHARS = 8192
+            if len(docs) > MAX_DOC_CHARS:
+                # Reserve space for the truncation notice + workspace link
+                suffix = f"\n\n... *(truncated — full RCA available in Cloud Function logs)*\n\n---\n\n**[🚀 Click here to open the {pipeline_name}]({workspace_url})**"
+                # Truncate the RCA portion, keeping the suffix intact
+                available = MAX_DOC_CHARS - len(suffix)
+                docs = docs[:available] + suffix
+                logger.info(f"Truncated documentation content from {len(docs)} to {MAX_DOC_CHARS} chars (limit: 8192)")
+            
             policy_to_update.documentation.content = docs
             
             update_mask = {"paths": ["documentation.content"]}
